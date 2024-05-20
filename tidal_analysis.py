@@ -11,7 +11,7 @@ import pytz
 
 
 FILENAME= 'data/1947ABE.txt'
-FILENAME1 ='data/1946ABE.txt'
+FILENAME1 ='data/1946ABE.txt' 
 
 
 def read_tidal_data(filename):
