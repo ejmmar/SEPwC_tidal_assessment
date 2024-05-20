@@ -8,10 +8,9 @@ import matplotlib.dates as libdates
 import uptide
 import pytz
 
-
-
+#the two data files currently being used 
 FILENAME= 'data/1947ABE.txt'
-FILENAME1 ='data/1946ABE.txt' 
+FILENAME1 ='data/1946ABE.txt'
 
 
 def read_tidal_data(filename):
@@ -46,9 +45,10 @@ def extract_single_year_remove_mean(year, data):
     year_data = data.loc[year_start:year_end, ['Sea Level']]
     #https://saturncloud.io/blog/what-is-pandas-mean-for-a-certain-column/
     year_data = year_data.apply(pd.to_numeric, errors="raise")
+    #remove the mean from the whole year
     year_data =(year_data)-(year_data['Sea Level'].mean())
+    #view the year data and see the NaN
     print (year_data)
-
     return year_data
 
 
@@ -62,9 +62,9 @@ def extract_section_remove_mean(start, end, data):
     #https://saturncloud.io/blog/what-is-pandas-mean-for-a-certain-column/
     #https://pandas.pydata.org/docs/reference/api/pandas.to_numeric.html
     section_data = section_data.apply(pd.to_numeric, errors="raise")
+    #remove the mean from the whole section in the testtides
     section_data =(section_data)-(section_data['Sea Level'].mean())
     print (section_data)
-
     return section_data
 
 
@@ -75,9 +75,9 @@ def join_data(data1, data2):
     join_data1=pd.concat([data1, data2])
     print(join_data1)
     data=join_data1
+    #join data for 1946 and 1947 
     #https://saturncloud.io/blog/how-to-sort-a-pandas-dataframe-by-date/
     data=data.sort_values(by=['DateTime'],ascending=True)
-
     return data
 
 
@@ -86,12 +86,16 @@ def sea_level_rise(data):
     #https://www.aporia.com/resources/how-to/drop-rows-pandas-dataframe-column-vamue-nan/
     #https://stackoverflow.com/questions/34843513/python-matplotlib-dates
     #-date2num-converting-numpy-array-to-matplotlib-datetimes
+    #dropping nan from sea level 
     data = data.dropna(subset=["Sea Level"])
+    #named variable libdates for matplotlib
+    #x and y variables named with snake_case_named_style
     x_axis= libdates.date2num(data.index)
     y_axis= data["Sea Level"].values
     print(x_axis,y_axis)
     #https://medium.com/@gubrani.sanya2/linear-regression-with-python-ffe0403a4683
     slope, _intercept, _r_value, p_value, _std_err =linregress(x_axis, y_axis)
+    #return only slope and p_value as it is main ask
     return slope, p_value
 
 
@@ -101,14 +105,20 @@ def sea_level_rise(data):
 def tidal_analysis(data, constituents, start_datetime):
     """extracting consituents from data index """
     #https://github.com/stephankramer/uptide/blob/master/README.md
+    #make sure nan is not in the merged sea level column 
     data = data.dropna(subset=["Sea Level"]) 
+    #constituents is both M2 and S2
     tide=uptide.Tides(['constituents'])
     tide.set_initial_time(start_datetime)
+    #timezone is univesal time zone for UK
     time_zone=pytz.timezone("utc")
+    #use dates for the extracted section of data 
     seconds= (data.index.astype('int64').to_numpy()
                      /1e9)- datetime.datetime(1946,1,15,0,0,0,tzinfo=time_zone).timestamp()
-    #mini course link
+    #https://github.com/stephankramer/uptide
+    #Elevation data and time in seconds to uptide for the harmonic analysis
     amp,pha = uptide.harmonic_analysis(tide, data["Sea Level"].to_numpy()/1000, seconds)
+    #uptide returns amplitudes and phases in radians
     print(amp,pha)
     print(uptide.select_constituents(constituents,15*24*60*60))
     #see how many days worth of data we need(14.7653)
