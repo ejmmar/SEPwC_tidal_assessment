@@ -1,14 +1,15 @@
 """import necessary modules for code to run"""
 #import argparse
-import datetime
 import pandas as pd
 import numpy as np
 from scipy.stats import linregress
 import matplotlib.dates as libdates
 import uptide
-import pytz
+#modules datetime and pytz were imported on test tides to run the tests
+#import datetime
+#import pytz
 
-#the two data files currently being used 
+#the two data files currently being used
 FILENAME= 'data/1947ABE.txt'
 FILENAME1 ='data/1946ABE.txt'
 
@@ -75,7 +76,7 @@ def join_data(data1, data2):
     join_data1=pd.concat([data1, data2])
     print(join_data1)
     data=join_data1
-    #join data for 1946 and 1947 
+    #join data for 1946 and 1947
     #https://saturncloud.io/blog/how-to-sort-a-pandas-dataframe-by-date/
     data=data.sort_values(by=['DateTime'],ascending=True)
     return data
@@ -86,7 +87,7 @@ def sea_level_rise(data):
     #https://www.aporia.com/resources/how-to/drop-rows-pandas-dataframe-column-vamue-nan/
     #https://stackoverflow.com/questions/34843513/python-matplotlib-dates
     #-date2num-converting-numpy-array-to-matplotlib-datetimes
-    #dropping nan from sea level 
+    #dropping nan from sea level
     data = data.dropna(subset=["Sea Level"])
     #named variable libdates for matplotlib
     #x and y variables named with snake_case_named_style
@@ -103,27 +104,25 @@ def sea_level_rise(data):
 
     #return
 def tidal_analysis(data, constituents, start_datetime):
-    """extracting consituents from data index """
+    """extracting constituents from data index """
     #https://github.com/stephankramer/uptide/blob/master/README.md
-    #make sure nan is not in the merged sea level column 
-    data = data.dropna(subset=["Sea Level"]) 
+    #make sure nan is not in the merged sea level column
+    data = data.dropna(subset=["Sea Level"])
     #constituents is both M2 and S2
-    tide=uptide.Tides(['constituents'])
+    tide=uptide.Tides(constituents)
     tide.set_initial_time(start_datetime)
     #timezone is univesal time zone for UK
-    time_zone=pytz.timezone("utc")
-    #use dates for the extracted section of data 
-    seconds= (data.index.astype('int64').to_numpy()
-                     /1e9)- datetime.datetime(1946,1,15,0,0,0,tzinfo=time_zone).timestamp()
+    #time_zone=pytz.timezone("utc")
+    #use dates for the extracted section of data
+    #call start_datetime function rather than hard code it
+    seconds= (data.index.astype('int64').to_numpy()/1e9)- start_datetime.timestamp()
     #https://github.com/stephankramer/uptide
-    #Elevation data and time in seconds to uptide for the harmonic analysis
-    amp,pha = uptide.harmonic_analysis(tide, data["Sea Level"].to_numpy()/1000, seconds)
+    #elevation data and time in seconds to uptide for the harmonic analysis
+    #measured in m
+    amp,pha = uptide.harmonic_analysis(tide, data["Sea Level"].to_numpy(), seconds)
     #uptide returns amplitudes and phases in radians
     print(amp,pha)
-    print(uptide.select_constituents(constituents,15*24*60*60))
-    #see how many days worth of data we need(14.7653)
     tide = uptide.Tides(constituents)
-    print(tide.get_minimum_Rayleigh_period()/86400.)
     return amp, pha
 
 
