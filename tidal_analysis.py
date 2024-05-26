@@ -5,6 +5,7 @@ import numpy as np
 from scipy.stats import linregress
 import matplotlib.dates as libdates
 import uptide
+
 #modules datetime and pytz were imported on test tides to run the tests
 #import datetime
 #import pytz
@@ -89,8 +90,10 @@ def sea_level_rise(data):
     #-date2num-converting-numpy-array-to-matplotlib-datetimes
     #dropping nan from sea level
     data = data.dropna(subset=["Sea Level"])
+    #https://www.geeksforgeeks.org/matplotlib-dates-dateformatter-class-in-python/
     #named variable libdates for matplotlib
     #x and y variables named with snake_case_named_style
+    #time is the x_axis
     x_axis= libdates.date2num(data.index)
     y_axis= data["Sea Level"].values
     print(x_axis,y_axis)
@@ -105,15 +108,14 @@ def sea_level_rise(data):
     #return
 def tidal_analysis(data, constituents, start_datetime):
     """extracting constituents from data index """
+    #https://jhill1.github.io/SEPwC.github.io/Mini_courses.html#tidal-analysis-in-python
     #https://github.com/stephankramer/uptide/blob/master/README.md
     #make sure nan is not in the merged sea level column
     data = data.dropna(subset=["Sea Level"])
     #constituents is both M2 and S2
     tide=uptide.Tides(constituents)
     tide.set_initial_time(start_datetime)
-    #timezone is univesal time zone for UK
-    #time_zone=pytz.timezone("utc")
-    #use dates for the extracted section of data
+    #time_zone=pytz.timezone("utc") is written in test so not needed in code
     #call start_datetime function rather than hard code it
     seconds= (data.index.astype('int64').to_numpy()/1e9)- start_datetime.timestamp()
     #https://github.com/stephankramer/uptide
@@ -128,9 +130,22 @@ def tidal_analysis(data, constituents, start_datetime):
 
     #return
 
-#def get_longest_contiguous_data(data):
+def get_longest_contiguous_data(data):
+    """"class regression"""
+    #https://stackoverflow.com/questions/1347791/unicode-error-unicodeescape-codec-cant-decode-bytes-when-writing-windows
+    #https://www.reddit.com/r/learnpython/comments/1bogs4y/comment/kwp9w91/
+    import glob
+    #import os
+    
+    #all_files = glob.glob(os.path.join('.C://User//emmaj//SEPwC_tidal_assessment//data//**', "*.txt"))
+    #df = pd.concat((pd.read_csv(file) for file in all_files), ignore_index=True)
+    
+    print('all csv files in data directory:', glob.glob('data/*.txt'))
+    f = glob.glob('.C://User//emmaj//SEPwC_tidal_assessment//data//**')
+    print (f)
 
 
+#files:List[str]=glob(pathname="**/*.{csv, xls}", recursive=True)
     #return
 
 #if __name__ == '__main__':
