@@ -130,20 +130,34 @@ def tidal_analysis(data, constituents, start_datetime):
 
     #return
 
-def get_longest_contiguous_data(data):
-    """"class regression"""
+#def get_longest_contiguous_data(data):
+   # """"class regression"""
     #https://stackoverflow.com/questions/1347791/unicode-error-unicodeescape-codec-cant-decode-bytes-when-writing-windows
     #https://www.reddit.com/r/learnpython/comments/1bogs4y/comment/kwp9w91/
-    import glob
-    #import os
     
-    #all_files = glob.glob(os.path.join('.C://User//emmaj//SEPwC_tidal_assessment//data//**', "*.txt"))
-    #df = pd.concat((pd.read_csv(file) for file in all_files), ignore_index=True)
-    
-    print('all csv files in data directory:', glob.glob('data/*.txt'))
-    f = glob.glob('.C://User//emmaj//SEPwC_tidal_assessment//data//**')
-    print (f)
 
+import glob
+txtfiles=[]
+txtfiles=glob.glob("C:\\Users\\emmaj\\SEPwC_tidal_assessment\\data\\aberdeen\*.txt")
+print(*txtfiles, sep="\n")
+    
+import os
+list_df=[]
+for txtfile in txtfiles:
+    fpath=txtfile.replace("\\","/")
+    print("Reading: ", fpath.ljust(40), "Exists: ", os.path.exists(fpath))
+    df=pd.read_csv(fpath,sep=r'\s+', skiprows=(0,1,2,3,4,5,6,7,8,9,10),
+                       names=['Cycle','Date', 'Time','Sea Level','Residual'])
+    
+    txt_name =txtfile.split('\\')[-1].split('.')[0]
+    df['file']=txt_name
+    
+    list_df.append(df)
+
+final_df=pd.concat(list_df)
+
+
+   
 
 #files:List[str]=glob(pathname="**/*.{csv, xls}", recursive=True)
     #return
