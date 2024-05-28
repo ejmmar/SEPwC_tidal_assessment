@@ -105,9 +105,6 @@ def sea_level_rise(data):
     return slope, p_value
 
 
-
-
-    #return
 def tidal_analysis(data, constituents, start_datetime):
     """extracting constituents from data index """
     #https://jhill1.github.io/SEPwC.github.io/Mini_courses.html#tidal-analysis-in-python
@@ -139,11 +136,18 @@ def tidal_analysis(data, constituents, start_datetime):
     #https://www.reddit.com/r/learnpython/comments/1bogs4y/comment/kwp9w91/
 
 
-
+#https://www.youtube.com/watch?v=599ONBvdAfE
+#https://www.geeksforgeeks.org/how-to-read-multiple-data-files-into-pandas/
 txtfiles=[]
 txtfiles=glob.glob("C:\\Users\\emmaj\\SEPwC_tidal_assessment\\data\\aberdeen\\*.txt")
 print(*txtfiles, sep="\n")
 
+formatting_files=[]
+for file in txtfiles:
+    file= read_tidal_data(file)
+    formatting_files.append(file)
+    print (formatting_files)
+    print("-------------")
 
 list_df=[]
 for txtfile in txtfiles:
