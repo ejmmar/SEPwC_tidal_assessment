@@ -164,22 +164,23 @@ class TestTidalAnalysis():
         assert score > 9
 
 class TestRegression():
+    #changed 'python 3' to 'python' with permission from Jon in order to run my code
 
     def test_whitby_regression(self):
 
         from subprocess import run
-        result = run(["python3","tidal_analysis.py","-v","data/whitby"], capture_output=True, check=True)
+        result = run(["python","tidal_analysis.py","-v","data/whitby"], capture_output=True, check=True)
         assert len(result.stdout) > 25
 
     def test_aberdeen_regression(self):
 
         from subprocess import run
-        result = run(["python3","tidal_analysis.py","--verbose","data/aberdeen"], capture_output=True, check=True)
+        result = run(["python","tidal_analysis.py","--verbose","data/aberdeen"], capture_output=True, check=True)
         assert len(result.stdout) > 25
 
     def test_dover_regression(self):
 
         from subprocess import run
-        result = run(["python3","tidal_analysis.py","data/dover"], capture_output=True, check=True)
+        result = run(["python","tidal_analysis.py","data/dover"], capture_output=True, check=True)
         assert len(result.stdout) > 25
 
