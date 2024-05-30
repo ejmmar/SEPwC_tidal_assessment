@@ -1,12 +1,13 @@
 """import necessary modules for code to run"""
 #import argparse
+import datetime
 import glob
-import os
 import pandas as pd
 import numpy as np
 from scipy.stats import linregress
 import matplotlib.dates as libdates
 import uptide
+import datetime
 
 #modules datetime and pytz were imported on test tides to run the tests
 #import datetime
@@ -122,48 +123,56 @@ def tidal_analysis(data, constituents, start_datetime):
     #measured in m
     amp,pha = uptide.harmonic_analysis(tide, data["Sea Level"].to_numpy(), seconds)
     #uptide returns amplitudes and phases in radians
-    print(amp,pha)
-    tide = uptide.Tides(constituents)
     return amp, pha
 
-
-   #return
-
-#def get_longest_contiguous_data(data):
-   # """"class regression"""
+def get_longest_contiguous_data(data):
+    """"longest sea level data with no NAN"""
     #https://stackoverflow.com/questions/1347791/unicode-error-unicodeescape-
     #codec-cant-decode-bytes-when-writing-windows
     #https://www.reddit.com/r/learnpython/comments/1bogs4y/comment/kwp9w91/
-
+    #https://stackoverflow.com/questions/41494444/pandas-find-longest
+    #-stretch-without-nan-values
+    data = np.append(np.nan, np.append(data, np.nan))
+    # find where null
+    nulldata = np.where(np.isnan(data))[0]
+    # diff to find length of stretch
+    # argmax to find where largest stretch
+    length = np.diff(nulldata).argmax()
+    # return original positions of boundary nulls
+    return nulldata[[length, length + 1]] + np.array([0, -2])
 
 #https://www.youtube.com/watch?v=599ONBvdAfE
 #https://www.geeksforgeeks.org/how-to-read-multiple-data-files-into-pandas/
 txtfiles=[]
 txtfiles=glob.glob("C:\\Users\\emmaj\\SEPwC_tidal_assessment\\data\\aberdeen\\*.txt")
-print(*txtfiles, sep="\n")
+#print(*txtfiles, sep="\n")
 
 formatting_files=[]
 for file in txtfiles:
     file= read_tidal_data(file)
     formatting_files.append(file)
-    print (formatting_files)
-    print("-------------")
+#    print (formatting_files)
+#    print("-------------")
 
-list_df=[]
-for txtfile in txtfiles:
-    fpath=txtfile.replace("\\","/")
-    print("Reading: ", fpath.ljust(40), "Exists: ", os.path.exists(fpath))
-    df=pd.read_csv(fpath,sep=r'\s+', skiprows=(0,1,2,3,4,5,6,7,8,9,10),
-                   names=['Cycle','Date', 'Time','Sea Level','Residual'])
+all_files= join_data(formatting_files[0], formatting_files[1])
 
-    txt_name =txtfile.split('\\')[-1].split('.')[0]
-    df['file']=txt_name
-
-    list_df.append(df)
-
-final_df=pd.concat(list_df)
+#https://www.programiz.com/python-programming/while-loop
+#https://stackoverflow.com/questions/65902709/pandas-increment-counter-on-condition
+Counter = 0 
+while Counter<(len(txtfiles)):
+    all_files= join_data(all_files, formatting_files[Counter])
+    Counter = Counter + 1
 
 
+print(tidal_analysis(all_files, ['M2'], (datetime.datetime(2000,1,1, 0, 0, 0))))
+
+print(tidal_analysis(all_files, ['S2'], (datetime.datetime(2000,1,1, 0, 0, 0))))         
+
+print(sea_level_rise(all_files))
+
+#boundaries
+sealevelnonan= all_files['Sea Level']
+print (get_longest_contiguous_data(sealevelnonan))
 
 
 #files:List[str]=glob(pathname="**/*.{csv, xls}", recursive=True)
