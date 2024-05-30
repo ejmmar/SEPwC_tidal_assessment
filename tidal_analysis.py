@@ -153,17 +153,48 @@ if __name__ == '__main__':
         all_files= join_data(all_files, formatting_files[COUNTER])
         COUNTER = COUNTER + 1
 
+    DIRECTORY = str(dirname)
+    DIRECTORY = DIRECTORY[5:]
+    #prints the name of the station
+    print ("-----------------------------")
+    print ('Station Name = '+(DIRECTORY))
+
     #https://www.geeksforgeeks.org/ways-to-remove-ith-character-from-string-in-python/
     #create string to remove unnecessary characters
+    #prints M2 data
+    print ("-----------------------------")
+    print ("M2 Amplitude in m:")
     M2=str(tidal_analysis(all_files, ['M2'], (datetime.datetime(2000,1,1 ,0, 0, 0))))
     print(M2[8:13])
 
+    #prints S2 data
+    print ("-----------------------------")
+    print ("S2 Amplitude in m:")
     S2=str(tidal_analysis(all_files, ['S2'], (datetime.datetime(2000,1,1, 0, 0, 0))))
     print(S2[8:13])
 
+    #prints sea level rise
+    print ("-----------------------------")
+    print ("Sea Level Rise in m:")
     print(sea_level_rise(all_files)[1])
 
+    #https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop.html
+    #same information is found in the datetime index
+    all_files=all_files.drop(columns=['Time'])
+    all_files=all_files.drop(columns=['Date'])
+
+    #https://stackoverflow.com/questions/23354115/printing-specific-parts-of-a-string-in-python
     #boundaries of only contiguous no NAN sea level
-    sealevelnonan= all_files['Sea Level']
-    print (get_longest_contiguous_data(sealevelnonan))
+    #prints 4 coloumns of contiguous data
+    print ("-----------------------------")
+    print ("Longest Contiguous Data:")
+    dataframe=all_files['Sea Level']
+    range_dataframe=get_longest_contiguous_data(dataframe)
+    RANGE_DATAFRAME_STR=str(range_dataframe)
+    RANGE_DATAFRAME_STR=RANGE_DATAFRAME_STR[1:-1]
+    RANGE_DATAFRAME_STR=RANGE_DATAFRAME_STR.split()
+    start_dataframe=int(RANGE_DATAFRAME_STR[0])
+    end_dataframe=int(RANGE_DATAFRAME_STR[1])
+    print(all_files[start_dataframe:end_dataframe])
+    print ("-----------------------------")
     
