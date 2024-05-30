@@ -1,5 +1,5 @@
 """import necessary modules for code to run"""
-#import argparse
+import argparse
 import datetime
 import glob
 import pandas as pd
@@ -7,7 +7,6 @@ import numpy as np
 from scipy.stats import linregress
 import matplotlib.dates as libdates
 import uptide
-import datetime
 
 #modules datetime and pytz were imported on test tides to run the tests
 #import datetime
@@ -99,7 +98,6 @@ def sea_level_rise(data):
     #time is the x_axis
     x_axis= libdates.date2num(data.index)
     y_axis= data["Sea Level"].values
-    print(x_axis,y_axis)
     #https://medium.com/@gubrani.sanya2/linear-regression-with-python-ffe0403a4683
     slope, _intercept, _r_value, p_value, _std_err =linregress(x_axis, y_axis)
     #return only slope and p_value as it is main ask
@@ -141,58 +139,59 @@ def get_longest_contiguous_data(data):
     # return original positions of boundary nulls
     return nulldata[[length, length + 1]] + np.array([0, -2])
 
-#https://www.youtube.com/watch?v=599ONBvdAfE
-#https://www.geeksforgeeks.org/how-to-read-multiple-data-files-into-pandas/
-txtfiles=[]
-txtfiles=glob.glob("C:\\Users\\emmaj\\SEPwC_tidal_assessment\\data\\aberdeen\\*.txt")
-#print(*txtfiles, sep="\n")
+if __name__ == '__main__':
 
-formatting_files=[]
-for file in txtfiles:
-    file= read_tidal_data(file)
-    formatting_files.append(file)
-#    print (formatting_files)
-#    print("-------------")
+    parser = argparse.ArgumentParser(
+                     prog="UK Tidal analysis",
+                     description="Calculate tidal constiuents and RSL from tide gauge data",
+                     epilog="Copyright 2024, Jon Hill"
+                     )
 
-all_files= join_data(formatting_files[0], formatting_files[1])
+    parser.add_argument("directory",
+                    help="the directory containing txt files with data")
+    parser.add_argument('-v', '--verbose',
+                    action='store_true',
+                    default=False,
+                    help="Print progress")
 
-#https://www.programiz.com/python-programming/while-loop
-#https://stackoverflow.com/questions/65902709/pandas-increment-counter-on-condition
-Counter = 0 
-while Counter<(len(txtfiles)):
-    all_files= join_data(all_files, formatting_files[Counter])
-    Counter = Counter + 1
+    args = parser.parse_args()
+    dirname = args.directory
+    verbose = args.verbose
 
+    #https://www.youtube.com/watch?v=599ONBvdAfE
+    #https://www.geeksforgeeks.org/how-to-read-multiple-data-files-into-pandas/
+    txtfiles=[]
+    #txtfiles=glob.glob("C:\\Users\\emmaj\\SEPwC_tidal_assessment\\data\\aberdeen\\*.txt")
+    txtfiles=glob.glob(str(dirname)+"/*.txt")
+    #print(*txtfiles, sep="\n")
 
-print(tidal_analysis(all_files, ['M2'], (datetime.datetime(2000,1,1, 0, 0, 0))))
+    formatting_files=[]
+    for file in txtfiles:
+        file= read_tidal_data(file)
+        formatting_files.append(file)
+        #print (formatting_files)
+         #print("-------------")
 
-print(tidal_analysis(all_files, ['S2'], (datetime.datetime(2000,1,1, 0, 0, 0))))         
+    all_files= join_data(formatting_files[0], formatting_files[1])
 
-print(sea_level_rise(all_files))
+    #https://www.programiz.com/python-programming/while-loop
+    #https://stackoverflow.com/questions/65902709/pandas-increment-counter-on-condition
+    #loop for length of all text files 
+    Counter = 0 
+    while Counter<(len(txtfiles)):
+        all_files= join_data(all_files, formatting_files[Counter])
+        Counter = Counter + 1
 
-#boundaries
-sealevelnonan= all_files['Sea Level']
-print (get_longest_contiguous_data(sealevelnonan))
+    #https://www.geeksforgeeks.org/ways-to-remove-ith-character-from-string-in-python/
+    #create string to remove unnecessary characters
+    M2=str(tidal_analysis(all_files, ['M2'], (datetime.datetime(2000,1,1 ,0, 0, 0)))) 
+    print(M2[8:13]) 
 
+    S2=str(tidal_analysis(all_files, ['S2'], (datetime.datetime(2000,1,1, 0, 0, 0))))
+    print(S2[8:13])       
 
-#files:List[str]=glob(pathname="**/*.{csv, xls}", recursive=True)
-    #return
+    print(sea_level_rise(all_files)[1])
 
-#if __name__ == '__main__':
-
-    #parser = argparse.ArgumentParser(
-                     #prog="UK Tidal analysis",
-                     #description="Calculate tidal constiuents and RSL from tide gauge data",
-                     #epilog="Copyright 2024, Jon Hill"
-                     #)
-
-    #parser.add_argument("directory",
-                    #help="the directory containing txt files with data")
-    #parser.add_argument('-v', '--verbose',
-                    #action='store_true',
-                    #default=False,
-                    #help="Print progress")
-
-    #args = parser.parse_args()
-    #dirname = args.directory
-    #verbose = args.verbose
+    #boundaries of only contiguous no NAN sea level
+    sealevelnonan= all_files['Sea Level']
+    print (get_longest_contiguous_data(sealevelnonan))
