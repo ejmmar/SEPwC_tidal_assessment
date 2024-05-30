@@ -7,9 +7,7 @@ import numpy as np
 from scipy.stats import linregress
 import matplotlib.dates as libdates
 import uptide
-
 #modules datetime and pytz were imported on test tides to run the tests
-#import pytz
 
 
 def read_tidal_data(filename):
@@ -79,56 +77,41 @@ def join_data(data1, data2):
 
 def sea_level_rise(data):
     """Remove nan from the coloum sea level"""
-    #https://www.aporia.com/resources/how-to/drop-rows-pandas-dataframe-column-vamue-nan/
     #https://stackoverflow.com/questions/34843513/python-matplotlib-dates
     #-date2num-converting-numpy-array-to-matplotlib-datetimes
     #dropping nan from sea level
     data = data.dropna(subset=["Sea Level"])
     #https://www.geeksforgeeks.org/matplotlib-dates-dateformatter-class-in-python/
-    #named variable libdates for matplotlib
-    #x and y variables named with snake_case_named_style
     #time is the x_axis
     x_axis= libdates.date2num(data.index)
     y_axis= data["Sea Level"].values
     #https://medium.com/@gubrani.sanya2/linear-regression-with-python-ffe0403a4683
     slope, _intercept, _r_value, p_value, _std_err =linregress(x_axis, y_axis)
-    #return only slope and p_value as it is main ask
+    #return only slope and p_value as on test tides
     return slope, p_value
 
 
 def tidal_analysis(data, constituents, start_datetime):
     """extracting constituents from data index """
-    #https://jhill1.github.io/SEPwC.github.io/Mini_courses.html#tidal-analysis-in-python
     #https://github.com/stephankramer/uptide/blob/master/README.md
     #make sure nan is not in the merged sea level column
     data = data.dropna(subset=["Sea Level"])
     #constituents is both M2 and S2
     tide=uptide.Tides(constituents)
     tide.set_initial_time(start_datetime)
-    #time_zone=pytz.timezone("utc") is written in test so not needed in code
     #call start_datetime function rather than hard code it
     seconds= (data.index.astype('int64').to_numpy()/1e9)- start_datetime.timestamp()
     #https://github.com/stephankramer/uptide
-    #elevation data and time in seconds to uptide for the harmonic analysis
-    #measured in m
+    #elevation data in m and time in seconds to uptide for the harmonic analysis
     amp,pha = uptide.harmonic_analysis(tide, data["Sea Level"].to_numpy(), seconds)
-    #uptide returns amplitudes and phases in radians
     return amp, pha
 
 def get_longest_contiguous_data(data):
     """"longest sea level data with no NAN"""
-    #https://stackoverflow.com/questions/1347791/unicode-error-unicodeescape-
-    #codec-cant-decode-bytes-when-writing-windows
-    #https://www.reddit.com/r/learnpython/comments/1bogs4y/comment/kwp9w91/
     #https://stackoverflow.com/questions/41494444/pandas-find-longest
-    #-stretch-without-nan-values
     data = np.append(np.nan, np.append(data, np.nan))
-    # find where null
     nulldata = np.where(np.isnan(data))[0]
-    # diff to find length of stretch
-    # argmax to find where largest stretch
     length = np.diff(nulldata).argmax()
-    # return original positions of boundary nulls
     return nulldata[[length, length + 1]] + np.array([0, -2])
 
 if __name__ == '__main__':
@@ -153,22 +136,18 @@ if __name__ == '__main__':
     #https://www.youtube.com/watch?v=599ONBvdAfE
     #https://www.geeksforgeeks.org/how-to-read-multiple-data-files-into-pandas/
     txtfiles=[]
-    #txtfiles=glob.glob("C:\\Users\\emmaj\\SEPwC_tidal_assessment\\data\\aberdeen\\*.txt")
     txtfiles=glob.glob(str(dirname)+"/*.txt")
-    #print(*txtfiles, sep="\n")
 
     formatting_files=[]
     for file in txtfiles:
         file= read_tidal_data(file)
         formatting_files.append(file)
-        #print (formatting_files)
-         #print("-------------")
 
     all_files = join_data(formatting_files[0], formatting_files[1])
 
     #https://www.programiz.com/python-programming/while-loop
     #https://stackoverflow.com/questions/65902709/pandas-increment-counter-on-condition
-    #loop for length of all text files
+    #loop for length of all text files and counter to continue sequence
     COUNTER = 0
     while COUNTER<(len(txtfiles)):
         all_files= join_data(all_files, formatting_files[COUNTER])
